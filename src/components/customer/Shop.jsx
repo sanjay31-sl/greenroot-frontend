@@ -42,7 +42,7 @@ function PlantDetail({ plant, onBack }) {
         <div className="qty-row" style={{ marginTop: '1rem' }}>
           <button className="qty-btn" onClick={() => setQty(q => Math.max(1, q - 1))}>−</button>
           <span style={{ fontFamily: 'monospace', fontSize: '1.1rem', minWidth: 30, textAlign: 'center' }}>{qty}</span>
-          <button className="qty-btn" onClick={() => setQty(q => q + 1)}>+</button>
+          <button className="qty-btn" onClick={() => setQty(q => q + 1)}>+ 
 <button
   className="btn-main sm"
   style={{ flex: 1 }}
