@@ -10,33 +10,25 @@ function PlantDetail({ plant, onBack }) {
 
   const handleAdd = () => {
     addToCart(plant, qty);
-    toast(`${plant.name} added to cart 🛒`);
-    onBack();
+    toast('Added to cart 🌿');
   };
 
   return (
-    <div className="fade-in">
-      <button className="btn-outline green" onClick={onBack} style={{ marginBottom: '1rem' }}>
-        ← Back to shop
+    <div style={{ padding: '1rem' }}>
+      <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'var(--gold)', cursor: 'pointer', fontSize: '1rem', marginBottom: '1rem' }}>
+        ← Back
       </button>
-      <div className="detail-hero">{plant.emoji || '🌿'}</div>
-      <div className="card" style={{ marginTop: '1rem' }}>
-        <span className="cat-badge">{plant.category}</span>
-        <div style={{ fontFamily: 'var(--ff-head)', fontSize: '1.4rem', fontWeight: 700, margin: '.4rem 0 .1rem' }}>{plant.name}</div>
-        <div style={{ fontStyle: 'italic', color: 'var(--muted)', marginBottom: '.4rem' }}>{plant.scientificName}</div>
-        <div style={{ fontSize: '.8rem', color: 'var(--sage)', marginBottom: '.8rem' }}>
-          🌿 Sold by <b>{plant.nurseryName || 'GreenRoot Nursery'}</b>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '.8rem' }}>
-          <span style={{ fontSize: '1.4rem', color: 'var(--gold)', fontFamily: 'monospace', fontWeight: 700 }}>₹{plant.price}</span>
-          <span className={plant.stock > 10 ? 'in-stock' : plant.stock > 0 ? 'low-stock' : 'out-stock'}>
-            {plant.stock > 0 ? `${plant.stock} in stock` : 'Out of Stock'}
-          </span>
-        </div>
-        <div style={{ fontSize: '.9rem', color: 'var(--text)', lineHeight: 1.6, marginBottom: '.8rem' }}>{plant.description}</div>
+      <div style={{ background: 'var(--card)', borderRadius: 16, padding: '1.5rem' }}>
+        <div style={{ fontSize: '4rem', textAlign: 'center', marginBottom: '1rem' }}>{plant.emoji || '🌿'}</div>
+        <h2 style={{ color: 'var(--gold)', marginBottom: 4 }}>{plant.name}</h2>
+        {plant.scientificName && <p style={{ color: 'var(--muted)', fontStyle: 'italic', marginBottom: 8 }}>{plant.scientificName}</p>}
+        <p style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--gold)', marginBottom: 8 }}>₹{plant.price}</p>
+        <p style={{ color: 'var(--muted)', marginBottom: 4 }}>Stock: {plant.stock} available</p>
+        {plant.nurseryName && <p style={{ color: 'var(--muted)', marginBottom: 8 }}>🏡 {plant.nurseryName}</p>}
+        {plant.description && <p style={{ marginBottom: 8 }}>{plant.description}</p>}
         {plant.careTips && (
-          <div style={{ background: 'var(--soil)', borderRadius: 10, padding: '.8rem', fontSize: '.85rem', color: 'var(--mint)' }}>
-            🌿 <b>Care Tips:</b> {plant.careTips}
+          <div style={{ background: 'var(--bg)', borderRadius: 8, padding: '0.75rem', marginBottom: '1rem' }}>
+            <strong>Care Tips:</strong> {plant.careTips}
           </div>
         )}
         <div className="qty-row" style={{ marginTop: '1rem' }}>
@@ -66,101 +58,92 @@ function PlantDetail({ plant, onBack }) {
 }
 
 export default function Shop() {
-  const [plants, setPlants]     = useState([]);
-  const [loading, setLoading]   = useState(true);
-  const [search, setSearch]     = useState('');
+  const [plants, setPlants] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
-  const [sort, setSort]         = useState('');
-  const [detail, setDetail]     = useState(null);
+  const [selected, setSelected] = useState(null);
+  const { addToCart } = useCart();
+  const toast = useToast();
 
   useEffect(() => {
-    api.get('/plants').then(r => {
-      setPlants(r.data.plants || []);
-    }).catch(() => {}).finally(() => setLoading(false));
-  }, []);
+    fetchPlants();
+  }, [search, category]);
 
-  // Filter + sort
-  let filtered = plants.filter(p =>
-    (!search   || p.name.toLowerCase().includes(search.toLowerCase())) &&
-    (!category || p.category === category)
-  );
-  if (sort === 'price-asc')  filtered = [...filtered].sort((a,b) => a.price - b.price);
-  if (sort === 'price-desc') filtered = [...filtered].sort((a,b) => b.price - a.price);
-  if (sort === 'name')       filtered = [...filtered].sort((a,b) => a.name.localeCompare(b.name));
+  const fetchPlants = async () => {
+    try {
+      setLoading(true);
+      const params = {};
+      if (search) params.search = search;
+      if (category) params.category = category;
+      const res = await api.get('/plants', { params });
+      setPlants(res.data.plants || []);
+    } catch {
+      setPlants([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // Group by nursery
-  const groups = filtered.reduce((acc, p) => {
-    const n = p.nurseryName || 'GreenRoot Nursery';
-    if (!acc[n]) acc[n] = [];
-    acc[n].push(p);
-    return acc;
-  }, {});
-
-  if (detail) return <PlantDetail plant={detail} onBack={() => setDetail(null)} />;
+  if (selected) return <PlantDetail plant={selected} onBack={() => setSelected(null)} />;
 
   return (
-    <div className="fade-in">
-      <div className="section-title"><span />Our Plants</div>
+    <div style={{ padding: '1rem' }}>
+      <h2 style={{ color: 'var(--gold)', marginBottom: '1rem' }}>🌿 Shop</h2>
+      <input
+        className="input"
+        placeholder="Search plants..."
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+        style={{ marginBottom: '0.75rem', width: '100%' }}
+      />
+      <select
+        className="input"
+        value={category}
+        onChange={e => setCategory(e.target.value)}
+        style={{ marginBottom: '1rem', width: '100%' }}
+      >
+        <option value="">All Categories</option>
+        <option value="indoor">Indoor</option>
+        <option value="outdoor">Outdoor</option>
+        <option value="succulent">Succulent</option>
+        <option value="herb">Herb</option>
+        <option value="flowering">Flowering</option>
+        <option value="tree">Tree</option>
+      </select>
 
-      {/* Search + filter */}
-      <div className="search-bar">
-        <input
-          type="text" placeholder="🔍 Search plants..."
-          value={search} onChange={e => setSearch(e.target.value)}
-        />
-        <select value={category} onChange={e => setCategory(e.target.value)}>
-          <option value="">All Categories</option>
-          <option value="indoor">Indoor</option>
-          <option value="outdoor">Outdoor</option>
-          <option value="succulent">Succulents</option>
-          <option value="herb">Herbs</option>
-          <option value="flowering">Flowering</option>
-          <option value="tree">Trees</option>
-        </select>
-        <select value={sort} onChange={e => setSort(e.target.value)}>
-          <option value="">Sort by</option>
-          <option value="price-asc">Price ↑</option>
-          <option value="price-desc">Price ↓</option>
-          <option value="name">Name A-Z</option>
-        </select>
-      </div>
-
-      {loading && <div className="empty">Loading plants...</div>}
-
-      {!loading && filtered.length === 0 && <div className="empty">No plants found 🌱</div>}
-
-      {/* Grouped by nursery */}
-      {Object.entries(groups).map(([nursery, items]) => (
-        <div key={nursery} style={{ marginBottom: '1.5rem' }}>
-          <div className="nursery-header" style={{ display: 'flex', alignItems: 'center', gap: '.7rem', padding: '.6rem .8rem', background: 'linear-gradient(135deg,var(--moss),var(--bark))', borderRadius: 12, marginBottom: '.8rem', border: '1px solid rgba(107,143,78,.3)' }}>
-            <span style={{ fontSize: '1.3rem' }}>🌿</span>
-            <div>
-              <div style={{ fontFamily: 'var(--ff-head)', fontSize: '1rem', fontWeight: 700, color: 'var(--cream)' }}>{nursery}</div>
-              <div style={{ fontSize: '.75rem', color: 'var(--mint)' }}>{items.length} plant{items.length > 1 ? 's' : ''} available</div>
+      {loading ? (
+        <p style={{ color: 'var(--muted)', textAlign: 'center' }}>Loading plants...</p>
+      ) : plants.length === 0 ? (
+        <p style={{ color: 'var(--muted)', textAlign: 'center' }}>No plants found</p>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '1rem' }}>
+          {plants.map(plant => (
+            <div
+              key={plant._id}
+              style={{ background: 'var(--card)', borderRadius: 12, padding: '1rem', cursor: 'pointer' }}
+              onClick={() => setSelected(plant)}
+            >
+              <div style={{ fontSize: '2.5rem', textAlign: 'center', marginBottom: 8 }}>{plant.emoji || '🌿'}</div>
+              <div style={{ fontWeight: 600, marginBottom: 4 }}>{plant.name}</div>
+              <div style={{ color: 'var(--gold)', fontWeight: 700, marginBottom: 4 }}>₹{plant.price}</div>
+              <div style={{ color: 'var(--muted)', fontSize: '0.8rem', marginBottom: 8 }}>Stock: {plant.stock}</div>
+              <button
+                className="btn-main sm"
+                style={{ width: '100%' }}
+                disabled={plant.stock === 0}
+                onClick={e => {
+                  e.stopPropagation();
+                  addToCart(plant, 1);
+                  toast('Added to cart 🌿');
+                }}
+              >
+                {plant.stock === 0 ? 'Out of Stock' : '+ Add to Cart'}
+              </button>
             </div>
-          </div>
-
-          <div className="plant-grid">
-            {items.map(p => (
-              <div key={p._id} className="plant-card" onClick={() => setDetail(p)}>
-                <div className="plant-emoji">{p.emoji || '🌿'}</div>
-                <div className="plant-body">
-                  <span className="cat-badge">{p.category}</span>
-                  <div className="plant-name">{p.name}</div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '.5rem' }}>
-                    <span className="plant-price">₹{p.price}</span>
-                    <span className={p.stock > 10 ? 'in-stock' : p.stock > 0 ? 'low-stock' : 'out-stock'}>
-                      {p.stock > 0 ? `${p.stock} left` : 'Out of Stock'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div style={{ borderBottom: '1px solid var(--border)', marginTop: '1rem' }} />
+          ))}
         </div>
-      ))}
+      )}
     </div>
   );
 }
