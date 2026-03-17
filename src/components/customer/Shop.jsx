@@ -43,14 +43,22 @@ function PlantDetail({ plant, onBack }) {
           <button className="qty-btn" onClick={() => setQty(q => Math.max(1, q - 1))}>−</button>
           <span style={{ fontFamily: 'monospace', fontSize: '1.1rem', minWidth: 30, textAlign: 'center' }}>{qty}</span>
           <button className="qty-btn" onClick={() => setQty(q => q + 1)}>+</button>
-          <button
-            className="btn-main sm"
-            style={{ flex: 1 }}
-            disabled={plant.stock === 0}
-            onClick={handleAdd}
-          >
-            {plant.stock === 0 ? 'Out of Stock' : '+ Add to Cart'}
-          </button>
+         <button
+  className="btn-main sm"
+  style={{ flex: 1 }}
+  disabled={plant.stock === 0}
+  onClick={handleAdd}
+>
+  {plant.stock === 0 ? 'Out of Stock' : '+ Add to Cart'}
+</button>
+<button
+  className="btn-main sm"
+  style={{ flex: 1, background: 'var(--gold)', color: '#1a1a1a' }}
+  disabled={plant.stock === 0}
+  onClick={() => { handleAdd(); }}
+>
+  {plant.stock === 0 ? 'Out of Stock' : '🛒 Buy Now'}
+</button>
         </div>
       </div>
     </div>
