@@ -32,7 +32,7 @@ export default function OwnerOrders() {
   const handleUpdate = async (orderId, status) => {
     setUpdating(orderId);
     try {
-      await api.put(`/orders/${orderId}/status`, { status });
+      await api.patch(`/orders/${orderId}/status`, { status });
       fetchOrders();
     } catch { alert('Failed to update status'); }
     finally { setUpdating(null); }
