@@ -13,7 +13,7 @@ export function CartProvider({ children }) {
     setCart(prev => {
       const exists = prev.find(c => c.plantId === plant._id);
       if (exists) return prev.map(c => c.plantId === plant._id ? { ...c, qty: c.qty + qty } : c);
-      return [...prev, { plantId: plant._id, name: plant.name, price: plant.price, emoji: plant.emoji || '🌿', qty }];
+      return [...prev, { plantId: plant._id, name: plant.name, price: plant.price, emoji: plant.emoji || '🌿', qty, nurseryId: plant.nursery }];
     });
   };
 
