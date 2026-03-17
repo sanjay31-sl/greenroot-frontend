@@ -30,7 +30,9 @@ export default function LoginPage() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    if (!rName || !rEmail || !rPass) { setError('Please fill all fields'); return; }
+if (!rName || !rEmail || !rPass) { setError('Please fill all fields'); return; }
+if (rPhone && rPhone.replace(/\D/g, '').length < 10) { setError('Phone number must be at least 10 digits'); return; }
+if (rPass.length < 6) { setError('Password must be at least 6 characters'); return; }
     setError(''); setLoading(true);
     try {
       await register(rName, rEmail, rPass, rPhone, 'customer');
