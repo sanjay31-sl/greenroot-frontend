@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/axios';
 
-const CATEGORIES = ['Indoor', 'Outdoor', 'Succulents', 'Flowering', 'Trees', 'Herbs', 'Aquatic', 'Other'];
+const CATEGORIES = ['indoor', 'outdoor', 'succulent', 'herb', 'flowering', 'tree'];
 
 const emptyForm = {
   name: '', scientificName: '', price: '', stock: '',
-  category: 'Indoor', emoji: '🌿', description: '', careTips: ''
+  category: 'indoor', emoji: '🌿', description: '', careTips: ''
 };
 
 export default function OwnerInventory() {
