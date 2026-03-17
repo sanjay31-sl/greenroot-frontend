@@ -14,12 +14,22 @@ export default function CartModal({ onClose }) {
 const minDate = new Date().toISOString().split('T')[0];
 
 useEffect(() => {
-  if (cart.length > 0) {
+  if (cart.length > 0 && cart[0].nurseryId) {
+    api.get(`/nurseries/${cart[0].nurseryId}`).then(r => {
+      if (r.data.nursery) setNursery(r.data.nursery);
+    }).catch(() => {
+      api.get('/nurseries').then(r => {
+        if (r.data.nurseries?.length > 0) setNursery(r.data.nurseries[0]);
+      }).catch(() => {});
+    });
+  } else if (cart.length > 0) {
     api.get('/nurseries').then(r => {
-      if (r.data.nurseries?.length > 0) setNursery(r.data.nurseries[0]);
+      const approved = r.data.nurseries?.filter(n => n.status === 'approved');
+      if (approved?.length > 0) setNursery(approved[approved.length - 1]);
     }).catch(() => {});
   }
 }, [cart]);
+
   const handleOrder = async () => {
     if (!cart.length) { toast('Cart is empty', 'err'); return; }
     if (fulfilment === 'delivery' && !address) { toast('Enter delivery address', 'err'); return; }
