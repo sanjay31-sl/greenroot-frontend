@@ -79,26 +79,26 @@ export default function OwnerOrders() {
 
                 {/* Customer Info */}
                 <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '0.75rem' }}>
-                  👤 {o.user?.name || 'Customer'} • {o.user?.phone || ''}
+                  👤 {o.customer?.name || 'Customer'} • {o.customer?.phone || ''}
                   {o.deliveryAddress && (
                     <div>📍 {o.deliveryAddress}</div>
                   )}
-                  <div>🚚 {o.fulfilmentType === 'pickup' ? 'Pickup' : 'Delivery'}</div>
+                 <div>🚚 {o.fulfilment === 'pickup' ? 'Pickup' : 'Delivery'}</div>
                 </div>
 
                 {/* Items */}
                 <div style={{ marginBottom: '0.75rem' }}>
                   {o.items?.map((item, i) => (
                     <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', padding: '0.25rem 0' }}>
-                      <span>{item.plant?.emoji || '🌿'} {item.plant?.name || 'Plant'} × {item.quantity}</span>
-                      <span style={{ color: '#c8a84b' }}>₹{item.price * item.quantity}</span>
+                      <span>🌿 {item.name || 'Plant'} × {item.qty}</span>
+<span style={{ color: '#c8a84b' }}>₹{item.price * item.qty}</span>
                     </div>
                   ))}
                 </div>
 
                 {/* Total + Action */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border)', paddingTop: '0.75rem' }}>
-                  <div style={{ fontWeight: 700, color: '#c8a84b' }}>Total: ₹{o.totalAmount}</div>
+                  <div style={{ fontWeight: 700, color: '#c8a84b' }}>Total: ₹{o.total}</div>
                   {next && (
                     <button
                       onClick={() => handleUpdate(o._id, next)}
