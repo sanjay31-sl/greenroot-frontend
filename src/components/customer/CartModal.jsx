@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCart } from '../../context/CartContext';
 import { useToast } from '../../context/ToastContext';
 import api from '../../api/axios';
@@ -9,10 +9,17 @@ export default function CartModal({ onClose }) {
   const [fulfilment, setFulfilment] = useState('delivery');
   const [address, setAddress]       = useState('');
   const [date, setDate]             = useState('');
-  const [loading, setLoading]       = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [nursery, setNursery] = useState(null);
+const minDate = new Date().toISOString().split('T')[0];
 
-  const minDate = new Date().toISOString().split('T')[0];
-
+useEffect(() => {
+  if (cart.length > 0) {
+    api.get('/nurseries').then(r => {
+      if (r.data.nurseries?.length > 0) setNursery(r.data.nurseries[0]);
+    }).catch(() => {});
+  }
+}, [cart]);
   const handleOrder = async () => {
     if (!cart.length) { toast('Cart is empty', 'err'); return; }
     if (fulfilment === 'delivery' && !address) { toast('Enter delivery address', 'err'); return; }
@@ -22,7 +29,8 @@ export default function CartModal({ onClose }) {
     try {
       const items = cart.map(c => ({ plant: c.plantId, name: c.name, qty: c.qty, price: c.price }));
       const deliveryAddress = fulfilment === 'pickup'
-        ? 'Pickup — GreenRoot Nursery, Chamundi Hills Road, Mysuru'
+        ? `Pickup — ${nursery?.name || 'Nursery'}, ${nursery?.address || ''}`
+
         : address;
       await api.post('/orders', { items, total, fulfilment, deliveryAddress, deliveryDate: date });
       clearCart();
@@ -111,9 +119,9 @@ export default function CartModal({ onClose }) {
                 <div style={{ background: 'var(--soil)', borderRadius: 12, padding: '1rem', marginTop: '.5rem', marginBottom: '.8rem' }}>
                   <div style={{ fontSize: '.85rem', fontWeight: 600, color: 'var(--cream)', marginBottom: '.4rem' }}>📍 Pickup from Nursery</div>
                   <div style={{ fontSize: '.82rem', color: 'var(--muted)', lineHeight: 1.6 }}>
-                    GreenRoot Nursery<br />
-                    #14, Chamundi Hills Road, Mysuru<br />
-                    ⏰ Mon–Sat: 8am – 8pm
+                    {nursery?.name || 'Nursery'}<br />
+{nursery?.address || ''}<br />
+⏰ {nursery?.openTime || '08:00'} – {nursery?.closeTime || '20:00'}
                   </div>
                 </div>
                 <div className="fg">
