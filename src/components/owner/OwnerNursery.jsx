@@ -13,7 +13,7 @@ export default function OwnerNursery() {
   });
 
   useEffect(() => {
-    api.get('/nurseries/mine')
+    api.get('/nurseries/my')
       .then(r => {
         if (r.data.nursery) {
           setNursery(r.data.nursery);
@@ -31,10 +31,10 @@ export default function OwnerNursery() {
     setSaving(true); setError(''); setSuccess('');
     try {
       if (nursery) {
-        const r = await api.put(`/nurseries/${nursery._id}`, form);
+        const r = await api.put('/nurseries/my', form);
         setNursery(r.data.nursery);
       } else {
-        const r = await api.post('/nurseries', form);
+        const r = await api.post('/nurseries/my', form);
         setNursery(r.data.nursery);
       }
       setSuccess('Nursery saved successfully! ✅');
