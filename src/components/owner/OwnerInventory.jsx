@@ -19,7 +19,7 @@ export default function OwnerInventory() {
   const [form, setForm] = useState(emptyForm);
 
   const fetchPlants = () => {
-    api.get('/plants/mine')
+    api.get('/plants/nursery')
       .then(r => setPlants(r.data.plants || []))
       .catch(() => setPlants([]))
       .finally(() => setLoading(false));
@@ -48,7 +48,7 @@ export default function OwnerInventory() {
     setSaving(true); setError(''); setSuccess('');
     try {
       if (editId) {
-        await api.put(`/plants/${editId}`, form);
+        await api.patch(`/plants/${editId}/stock`, { stock: form.stock });
         setSuccess('Plant updated! ✅');
       } else {
         await api.post('/plants', form);
