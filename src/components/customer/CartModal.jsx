@@ -14,8 +14,11 @@ export default function CartModal({ onClose }) {
 const minDate = new Date().toISOString().split('T')[0];
 
 useEffect(() => {
-  if (cart.length > 0 && cart[0].nurseryId) {
-    api.get(`/nurseries/${cart[0].nurseryId}`).then(r => {
+  api.get('/nurseries').then(r => {
+    const list = r.data.nurseries || [];
+    if (list.length > 0) setNursery(list[list.length - 1]);
+  }).catch(() => {});
+}, []);
       if (r.data.nursery) setNursery(r.data.nursery);
     }).catch(() => {
       api.get('/nurseries').then(r => {
