@@ -8,9 +8,9 @@ export default function OwnerNursery() {
   const [success, setSuccess] = useState('');
   const [error,   setError]   = useState('');
 
-  const [form, setForm] = useState({
-    name: '', address: '', phone: '', hours: '', description: ''
-  });
+const [form, setForm] = useState({
+  name: '', address: '', phone: '', openTime: '07:00', closeTime: '21:00', description: ''
+});
 
   useEffect(() => {
     api.get('/nurseries/my')
@@ -75,9 +75,13 @@ export default function OwnerNursery() {
         </div>
 
         <div className="fg">
-          <label>Business Hours</label>
-          <input type="text" placeholder="e.g. Mon-Sat 9AM-7PM"
-            value={form.hours} onChange={e => setForm({...form, hours: e.target.value})} />
+      <label>Open Time</label>
+<input type="time" value={form.openTime} onChange={e => setForm({...form, openTime: e.target.value})} />
+</div>
+<div className="fg">
+<label>Close Time</label>
+<input type="time" value={form.closeTime} onChange={e => setForm({...form, closeTime: e.target.value})} />
+
         </div>
 
         <div className="fg">
