@@ -73,9 +73,12 @@ function PlantDetail({ plant, onBack, onBuyNow }) {
 
 export default function Shop() {
   const [plants, setPlants] = useState([]);
+  const [allPlants, setAllPlants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
   const [selected, setSelected] = useState(null);
   const [showCart, setShowCart] = useState(false);
   const { addToCart } = useCart();
@@ -85,6 +88,10 @@ export default function Shop() {
     fetchPlants();
   }, [search, category]);
 
+  useEffect(() => {
+    applyPriceFilter();
+  }, [minPrice, maxPrice, allPlants]);
+
   const fetchPlants = async () => {
     try {
       setLoading(true);
@@ -92,12 +99,29 @@ export default function Shop() {
       if (search) params.search = search;
       if (category) params.category = category;
       const res = await api.get('/plants', { params });
-      setPlants(res.data.plants || []);
+      const fetched = res.data.plants || [];
+      setAllPlants(fetched);
+      setPlants(fetched);
     } catch {
+      setAllPlants([]);
       setPlants([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const applyPriceFilter = () => {
+    let filtered = [...allPlants];
+    if (minPrice !== '') filtered = filtered.filter(p => p.price >= Number(minPrice));
+    if (maxPrice !== '') filtered = filtered.filter(p => p.price <= Number(maxPrice));
+    setPlants(filtered);
+  };
+
+  const clearFilters = () => {
+    setMinPrice('');
+    setMaxPrice('');
+    setSearch('');
+    setCategory('');
   };
 
   if (selected) return (
@@ -114,18 +138,21 @@ export default function Shop() {
   return (
     <div style={{ padding: '1rem' }}>
       <h2 style={{ color: 'var(--gold)', marginBottom: '1rem' }}>🌿 Shop</h2>
+
+      {/* Search */}
       <input
         className="input"
         placeholder="Search plants..."
         value={search}
         onChange={e => setSearch(e.target.value)}
-        style={{ marginBottom: '0.75rem', width: '100%' }}
+        style={{ marginBottom: '0.75rem', width: '100%', background: 'var(--bark)', border: '1.5px solid var(--border)', borderRadius: 10, padding: '0.7rem 1rem', color: 'var(--text)', fontFamily: 'var(--ff-body)', fontSize: '0.95rem', outline: 'none' }}
       />
+
+      {/* Category filter */}
       <select
-        className="input"
         value={category}
         onChange={e => setCategory(e.target.value)}
-        style={{ marginBottom: '1rem', width: '100%' }}
+        style={{ marginBottom: '0.75rem', width: '100%', background: 'var(--bark)', border: '1.5px solid var(--border)', borderRadius: 10, padding: '0.7rem 1rem', color: 'var(--text)', fontFamily: 'var(--ff-body)', fontSize: '0.95rem', outline: 'none' }}
       >
         <option value="">All Categories</option>
         <option value="indoor">Indoor</option>
@@ -136,6 +163,40 @@ export default function Shop() {
         <option value="tree">Tree</option>
       </select>
 
+      {/* Price range filter */}
+      <div style={{ display: 'flex', gap: '0.6rem', marginBottom: '0.75rem', alignItems: 'center' }}>
+        <input
+          type="number"
+          placeholder="Min ₹"
+          value={minPrice}
+          onChange={e => setMinPrice(e.target.value)}
+          style={{ flex: 1, background: 'var(--bark)', border: '1.5px solid var(--border)', borderRadius: 10, padding: '0.7rem 1rem', color: 'var(--text)', fontFamily: 'var(--ff-body)', fontSize: '0.95rem', outline: 'none' }}
+        />
+        <span style={{ color: 'var(--muted)' }}>—</span>
+        <input
+          type="number"
+          placeholder="Max ₹"
+          value={maxPrice}
+          onChange={e => setMaxPrice(e.target.value)}
+          style={{ flex: 1, background: 'var(--bark)', border: '1.5px solid var(--border)', borderRadius: 10, padding: '0.7rem 1rem', color: 'var(--text)', fontFamily: 'var(--ff-body)', fontSize: '0.95rem', outline: 'none' }}
+        />
+        {(minPrice || maxPrice || search || category) && (
+          <button
+            onClick={clearFilters}
+            style={{ background: 'var(--bark)', border: '1.5px solid var(--border)', borderRadius: 10, padding: '0.7rem 1rem', color: 'var(--muted)', cursor: 'pointer', fontSize: '0.85rem', whiteSpace: 'nowrap' }}
+          >
+            ✕ Clear
+          </button>
+        )}
+      </div>
+
+      {/* Results count */}
+      {!loading && (
+        <p style={{ color: 'var(--muted)', fontSize: '0.82rem', marginBottom: '0.75rem' }}>
+          {plants.length} plant{plants.length !== 1 ? 's' : ''} found
+        </p>
+      )}
+
       {loading ? (
         <p style={{ color: 'var(--muted)', textAlign: 'center' }}>Loading plants...</p>
       ) : plants.length === 0 ? (
@@ -145,7 +206,7 @@ export default function Shop() {
           {plants.map(plant => (
             <div
               key={plant._id}
-              style={{ background: 'var(--card)', borderRadius: 12, padding: '1rem', cursor: 'pointer' }}
+              style={{ background: 'var(--bark)', border: '1px solid var(--border)', borderRadius: 12, padding: '1rem', cursor: 'pointer', transition: 'all 0.25s' }}
               onClick={() => setSelected(plant)}
             >
               <div style={{ fontSize: '2.5rem', textAlign: 'center', marginBottom: 8 }}>{plant.emoji || '🌿'}</div>
