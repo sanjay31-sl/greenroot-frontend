@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { useCart } from '../../context/CartContext';
 import { useToast } from '../../context/ToastContext';
 import api from '../../api/axios';
+import CartModal from './CartModal';
 
-function PlantDetail({ plant, onBack }) {
+function PlantDetail({ plant, onBack, onBuyNow }) {
   const { addToCart } = useCart();
   const toast = useToast();
   const [qty, setQty] = useState(1);
@@ -11,6 +12,11 @@ function PlantDetail({ plant, onBack }) {
   const handleAdd = () => {
     addToCart(plant, qty);
     toast('Added to cart 🌿');
+  };
+
+  const handleBuyNow = () => {
+    addToCart(plant, qty);
+    onBuyNow();
   };
 
   return (
@@ -21,11 +27,17 @@ function PlantDetail({ plant, onBack }) {
       <div style={{ background: 'var(--card)', borderRadius: 16, padding: '1.5rem' }}>
         <div style={{ fontSize: '4rem', textAlign: 'center', marginBottom: '1rem' }}>{plant.emoji || '🌿'}</div>
         <h2 style={{ color: 'var(--gold)', marginBottom: 4 }}>{plant.name}</h2>
-        {plant.scientificName && <p style={{ color: 'var(--muted)', fontStyle: 'italic', marginBottom: 8 }}>{plant.scientificName}</p>}
+        {plant.scientificName && (
+          <p style={{ color: 'var(--muted)', fontStyle: 'italic', marginBottom: 8 }}>{plant.scientificName}</p>
+        )}
         <p style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--gold)', marginBottom: 8 }}>₹{plant.price}</p>
         <p style={{ color: 'var(--muted)', marginBottom: 4 }}>Stock: {plant.stock} available</p>
-        {plant.nurseryName && <p style={{ color: 'var(--muted)', marginBottom: 8 }}>🏡 {plant.nurseryName}</p>}
-        {plant.description && <p style={{ marginBottom: 8 }}>{plant.description}</p>}
+        {plant.nurseryName && (
+          <p style={{ color: 'var(--muted)', marginBottom: 8 }}>🏡 {plant.nurseryName}</p>
+        )}
+        {plant.description && (
+          <p style={{ marginBottom: 8 }}>{plant.description}</p>
+        )}
         {plant.careTips && (
           <div style={{ background: 'var(--bg)', borderRadius: 8, padding: '0.75rem', marginBottom: '1rem' }}>
             <strong>Care Tips:</strong> {plant.careTips}
@@ -35,6 +47,8 @@ function PlantDetail({ plant, onBack }) {
           <button className="qty-btn" onClick={() => setQty(q => Math.max(1, q - 1))}>−</button>
           <span style={{ fontFamily: 'monospace', fontSize: '1.1rem', minWidth: 30, textAlign: 'center' }}>{qty}</span>
           <button className="qty-btn" onClick={() => setQty(q => q + 1)}>+</button>
+        </div>
+        <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.75rem' }}>
           <button
             className="btn-main sm"
             style={{ flex: 1 }}
@@ -45,9 +59,9 @@ function PlantDetail({ plant, onBack }) {
           </button>
           <button
             className="btn-main sm"
-            style={{ flex: 1, background: 'var(--gold)', color: '#1a1a1a' }}
+            style={{ flex: 1, background: 'var(--gold)', color: '#1a1a1a', fontWeight: 700 }}
             disabled={plant.stock === 0}
-            onClick={handleAdd}
+            onClick={handleBuyNow}
           >
             {plant.stock === 0 ? 'Out of Stock' : '🛒 Buy Now'}
           </button>
@@ -63,6 +77,7 @@ export default function Shop() {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
   const [selected, setSelected] = useState(null);
+  const [showCart, setShowCart] = useState(false);
   const { addToCart } = useCart();
   const toast = useToast();
 
@@ -85,7 +100,16 @@ export default function Shop() {
     }
   };
 
-  if (selected) return <PlantDetail plant={selected} onBack={() => setSelected(null)} />;
+  if (selected) return (
+    <>
+      <PlantDetail
+        plant={selected}
+        onBack={() => setSelected(null)}
+        onBuyNow={() => { setSelected(null); setShowCart(true); }}
+      />
+      {showCart && <CartModal onClose={() => setShowCart(false)} />}
+    </>
+  );
 
   return (
     <div style={{ padding: '1rem' }}>
@@ -130,7 +154,7 @@ export default function Shop() {
               <div style={{ color: 'var(--muted)', fontSize: '0.8rem', marginBottom: 8 }}>Stock: {plant.stock}</div>
               <button
                 className="btn-main sm"
-                style={{ width: '100%' }}
+                style={{ width: '100%', marginBottom: '0.4rem' }}
                 disabled={plant.stock === 0}
                 onClick={e => {
                   e.stopPropagation();
@@ -140,10 +164,24 @@ export default function Shop() {
               >
                 {plant.stock === 0 ? 'Out of Stock' : '+ Add to Cart'}
               </button>
+              <button
+                className="btn-main sm"
+                style={{ width: '100%', background: 'var(--gold)', color: '#1a1a1a', fontWeight: 700 }}
+                disabled={plant.stock === 0}
+                onClick={e => {
+                  e.stopPropagation();
+                  addToCart(plant, 1);
+                  setShowCart(true);
+                }}
+              >
+                {plant.stock === 0 ? 'Out of Stock' : '🛒 Buy Now'}
+              </button>
             </div>
           ))}
         </div>
       )}
+
+      {showCart && <CartModal onClose={() => setShowCart(false)} />}
     </div>
   );
 }
