@@ -7,31 +7,19 @@ export default function CartModal({ onClose }) {
   const { cart, updateQty, removeFromCart, clearCart, total } = useCart();
   const toast = useToast();
   const [fulfilment, setFulfilment] = useState('delivery');
-  const [address, setAddress]       = useState('');
-  const [date, setDate]             = useState('');
+  const [address, setAddress] = useState('');
+  const [date, setDate] = useState('');
   const [loading, setLoading] = useState(false);
   const [nursery, setNursery] = useState(null);
-const minDate = new Date().toISOString().split('T')[0];
 
-useEffect(() => {
-  api.get('/nurseries').then(r => {
-    const list = r.data.nurseries || [];
-    if (list.length > 0) setNursery(list[list.length - 1]);
-  }).catch(() => {});
-}, []);
-      if (r.data.nursery) setNursery(r.data.nursery);
-    }).catch(() => {
-      api.get('/nurseries').then(r => {
-        if (r.data.nurseries?.length > 0) setNursery(r.data.nurseries[0]);
-      }).catch(() => {});
-    });
-  } else if (cart.length > 0) {
+  const minDate = new Date().toISOString().split('T')[0];
+
+  useEffect(() => {
     api.get('/nurseries').then(r => {
-      const approved = r.data.nurseries?.filter(n => n.status === 'approved');
-      if (approved?.length > 0) setNursery(approved[approved.length - 1]);
+      const list = r.data.nurseries || [];
+      if (list.length > 0) setNursery(list[0]);
     }).catch(() => {});
-  }
-}, [cart]);
+  }, []);
 
   const handleOrder = async () => {
     if (!cart.length) { toast('Cart is empty', 'err'); return; }
@@ -43,15 +31,16 @@ useEffect(() => {
       const items = cart.map(c => ({ plant: c.plantId, name: c.name, qty: c.qty, price: c.price }));
       const deliveryAddress = fulfilment === 'pickup'
         ? `Pickup — ${nursery?.name || 'Nursery'}, ${nursery?.address || ''}`
-
         : address;
       await api.post('/orders', { items, total, fulfilment, deliveryAddress, deliveryDate: date });
       clearCart();
       onClose();
-      toast(fulfilment === 'delivery' ? 'Order placed! 🚚 Delivery confirmed' : 'Order placed! 🏪 Ready for pickup');
-    } catch(err) {
+      toast(fulfilment === 'delivery' ? 'Order placed! 🚚 Delivery confirmed' : 'Order placed! 🌿 Ready for pickup');
+    } catch (err) {
       toast(err.response?.data?.message || 'Failed to place order', 'err');
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -66,7 +55,7 @@ useEffect(() => {
         {/* Items */}
         {cart.length === 0
           ? <div className="empty">Your cart is empty 🌱</div>
-          : cart.map((item, i) => (
+          : cart.map(item => (
             <div key={item.plantId} className="cart-item">
               <span className="ci-emoji">{item.emoji}</span>
               <div className="ci-info">
@@ -130,11 +119,11 @@ useEffect(() => {
             {fulfilment === 'pickup' && (
               <>
                 <div style={{ background: 'var(--soil)', borderRadius: 12, padding: '1rem', marginTop: '.5rem', marginBottom: '.8rem' }}>
-                  <div style={{ fontSize: '.85rem', fontWeight: 600, color: 'var(--cream)', marginBottom: '.4rem' }}>📍 Pickup from Nursery</div>
+                  <div style={{ fontSize: '.85rem', fontWeight: 600, color: 'var(--cream)', marginBottom: '.4rem' }}>📌 Pickup from Nursery</div>
                   <div style={{ fontSize: '.82rem', color: 'var(--muted)', lineHeight: 1.6 }}>
-                    {nursery?.name || 'Nursery'}<br />
-{nursery?.address || ''}<br />
-⏰ {nursery?.openTime || '08:00'} – {nursery?.closeTime || '20:00'}
+                    {nursery?.name || 'Loading...'}<br />
+                    {nursery?.address || ''}<br />
+                    ⏰ {nursery?.openTime || '08:00'} – {nursery?.closeTime || '20:00'}
                   </div>
                 </div>
                 <div className="fg">
