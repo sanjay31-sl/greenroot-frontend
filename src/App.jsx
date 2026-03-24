@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
-import { ToastProvider } from './context/ToastContext';
 
 import CustomerApp    from './components/customer/CustomerApp';
 import OwnerLoginPage from './components/owner/OwnerLoginPage';
@@ -91,6 +90,7 @@ function CustomerLoginShell() {
           <a href="/admin" style={{ color: '#b08ad4', textDecoration: 'none' }}>Admin</a>
         </div>
       </div>
+      <div id="toast" className="toast"></div>
     </div>
   );
 }
@@ -121,21 +121,19 @@ function AdminRoute() {
 export default function App() {
   return (
     <BrowserRouter>
-      <ToastProvider>
-        <AuthProvider>
-          <CartProvider>
-            <Routes>
-              <Route path="/"                element={<CustomerLoginShell />} />
-              <Route path="/app"             element={<CustomerRoute />} />
-              <Route path="/owner"           element={<OwnerLoginPage />} />
-              <Route path="/owner/dashboard" element={<OwnerRoute />} />
-              <Route path="/admin"           element={<AdminLoginPage />} />
-              <Route path="/admin/dashboard" element={<AdminRoute />} />
-              <Route path="*"               element={<Navigate to="/" replace />} />
-            </Routes>
-          </CartProvider>
-        </AuthProvider>
-      </ToastProvider>
+      <AuthProvider>
+        <CartProvider>
+          <Routes>
+            <Route path="/"                element={<CustomerLoginShell />} />
+            <Route path="/app"             element={<CustomerRoute />} />
+            <Route path="/owner"           element={<OwnerLoginPage />} />
+            <Route path="/owner/dashboard" element={<OwnerRoute />} />
+            <Route path="/admin"           element={<AdminLoginPage />} />
+            <Route path="/admin/dashboard" element={<AdminRoute />} />
+            <Route path="*"               element={<Navigate to="/" replace />} />
+          </Routes>
+        </CartProvider>
+      </AuthProvider>
     </BrowserRouter>
   );
 }
